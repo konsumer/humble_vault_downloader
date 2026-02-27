@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "humble_vault_downloader",
+  "productName": "Humble Vault Downloader",
   "version": "0.1.0",
   "identifier": "com.konsumer.humble_vault_downloader",
   "build": {
@@ -21,6 +21,9 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "category": "Utility",
+    "shortDescription": "Download your Humble Bundle vault games",
+    "longDescription": "A desktop application to browse and download games from your Humble Bundle vault library."
   }
 }
