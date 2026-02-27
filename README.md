@@ -2,6 +2,8 @@
 
 A simple desktop app to download games from your Humble Bundle vault.
 
+This is not affiliated with Humble Bundle, and is totally unofficial.
+
 ## Installation
 
 Download the latest version for your system from the [Releases page](https://github.com/konsumer/humble_vault_downloader/releases).
@@ -16,17 +18,20 @@ Open the DMG and drag the app to your Applications folder.
 ### Linux
 
 - **AppImage** (works on any distribution):
+
   ```bash
   chmod +x humble-vault-downloader_*.AppImage
   ./humble-vault-downloader_*.AppImage
   ```
 
 - **Debian/Ubuntu**:
+
   ```bash
   sudo dpkg -i humble-vault-downloader_*.deb
   ```
 
 - **Fedora/RHEL/CentOS**:
+
   ```bash
   sudo rpm -i humble-vault-downloader_*.rpm
   ```
@@ -48,7 +53,7 @@ Open the DMG and drag the app to your Applications folder.
 
 ## Note
 
-Windows is not supported as Humble Bundle provides an [official Windows client](https://www.humblebundle.com/app).
+Windows is not supported as Humble Bundle provides an [official Windows client](https://www.humblebundle.com/app/download).
 
 ## Privacy
 
