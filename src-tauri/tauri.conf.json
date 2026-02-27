@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Humble Vault Downloader",
   "version": "0.1.0",
-  "identifier": "com.konsumer.humble_vault_downloader",
+  "identifier": "com.konsumer.humblevaultdownloader",
   "build": {
     "frontendDist": "../src"
   },
