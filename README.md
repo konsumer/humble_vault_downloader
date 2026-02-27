@@ -26,6 +26,18 @@ Open the DMG and drag the app to your Applications folder.
   sudo dpkg -i humble-vault-downloader_*.deb
   ```
 
+- **Fedora/RHEL/CentOS**:
+  ```bash
+  sudo rpm -i humble-vault-downloader_*.rpm
+  ```
+
+- **Tarball** (manual installation):
+  ```bash
+  tar -xzf humble-vault-downloader_*.tar.gz
+  cd humble-vault-downloader
+  ./humble-vault-downloader
+  ```
+
 ## How to Use
 
 1. Open the app
