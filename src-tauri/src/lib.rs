@@ -11,29 +11,13 @@ struct GameDownload {
     machine_name: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct Game {
-    name: String,
-    machine_name: String,
-    downloads: std::collections::HashMap<String, Vec<GameDownload>>,
-}
-
-#[derive(Debug, Deserialize)]
-struct CatalogGame {
-    #[serde(rename = "human-name")]
-    human_name: String,
-    #[serde(rename = "machine_name")]
-    machine_name: String,
-    downloads: serde_json::Value,
-}
-
 #[derive(Debug, Deserialize)]
 struct SignedUrlResponse {
     signed_url: String,
 }
 
 #[tauri::command]
-async fn fetch_vault_games(token: String) -> Result<Vec<Game>, String> {
+async fn fetch_vault_games(token: String) -> Result<Vec<serde_json::Value>, String> {
     let client = reqwest::Client::new();
     let mut all_games = Vec::new();
     let mut index = 0;
@@ -51,46 +35,13 @@ async fn fetch_vault_games(token: String) -> Result<Vec<Game>, String> {
             .await
             .map_err(|e| e.to_string())?;
 
-        let catalog: Vec<CatalogGame> = response.json().await.map_err(|e| e.to_string())?;
+        let mut catalog: Vec<serde_json::Value> = response.json().await.map_err(|e| e.to_string())?;
 
         if catalog.is_empty() {
             break;
         }
 
-        for game in catalog {
-            let mut downloads = std::collections::HashMap::new();
-
-            if let serde_json::Value::Object(platforms) = game.downloads {
-                for (platform, platform_data) in platforms {
-                    if let serde_json::Value::Object(data) = platform_data {
-                        if let Some(serde_json::Value::Object(url_obj)) = data.get("url") {
-                            if let Some(serde_json::Value::String(web_url)) = url_obj.get("web") {
-                                let download_machine_name = data
-                                    .get("machine_name")
-                                    .and_then(|v| v.as_str())
-                                    .unwrap_or(&game.machine_name)
-                                    .to_string();
-
-                                let filename = web_url.split('/').last().unwrap_or(web_url).to_string();
-
-                                downloads.entry(platform.clone()).or_insert_with(Vec::new).push(GameDownload {
-                                    filename,
-                                    url: web_url.clone(),
-                                    machine_name: download_machine_name,
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-
-            all_games.push(Game {
-                name: game.human_name,
-                machine_name: game.machine_name,
-                downloads,
-            });
-        }
-
+        all_games.append(&mut catalog);
         index += 1;
     }
 

@@ -3,122 +3,480 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Humble Vault Downloader</title>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
-        font-family: system-ui, -apple-system, sans-serif;
-        max-width: 1200px;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 20px;
+        background: #f5f5f5;
+        color: #333;
+      }
+      h1 {
+        color: #333;
       }
       #loading {
         text-align: center;
         padding: 40px;
       }
+      #games {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 20px;
+      }
       .game {
-        border: 1px solid #ddd;
-        margin: 10px 0;
-        padding: 15px;
-        border-radius: 5px;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+      }
+      .game:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+      }
+      .game-header {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+      }
+      .game-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .game-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #333;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .game-content {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
       }
       .game h3 {
-        margin: 0 0 10px 0;
+        margin: 0 0 8px 0;
+        font-size: 18px;
+        color: #333;
+        line-height: 1.3;
+      }
+      .game-developer {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 12px;
+      }
+      .game-description {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 12px;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5;
+        flex: 1;
+      }
+      .carousel {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 12px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+      }
+      .carousel::-webkit-scrollbar {
+        height: 4px;
+      }
+      .carousel::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 2px;
+      }
+      .carousel-item {
+        position: relative;
+        height: 50px;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: transform 0.2s;
+        flex-shrink: 0;
+      }
+      .carousel-item img {
+        height: 100%;
+        border-radius: 3px;
+      }
+      .carousel-item:hover {
+        transform: scale(1.1);
+      }
+      .carousel-item.video::after {
+        content: "▶";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        padding-left: 2px;
       }
       .platforms {
         display: flex;
-        gap: 10px;
+        gap: 8px;
         flex-wrap: wrap;
+        margin-top: auto;
       }
       .platform {
-        background: #f0f0f0;
-        padding: 5px 10px;
-        border-radius: 3px;
+        background: #007bff;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 5px;
         cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: background 0.2s;
+        white-space: nowrap;
       }
       .platform:hover {
-        background: #e0e0e0;
+        background: #0056b3;
       }
-      button {
-        padding: 8px 16px;
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        align-items: center;
+        justify-content: center;
+      }
+      .modal.active {
+        display: flex;
+      }
+      .modal-content {
+        max-width: 90%;
+        max-height: 90%;
+        position: relative;
+      }
+      .modal-content img {
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 4px;
+      }
+      .modal-content iframe {
+        width: 80vw;
+        height: 45vw;
+        max-height: 80vh;
+        border: none;
+        border-radius: 4px;
+      }
+      .modal-close {
+        position: absolute;
+        top: -40px;
+        right: 0;
+        color: white;
+        font-size: 35px;
+        font-weight: bold;
         cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0;
+        line-height: 1;
+      }
+      .modal-close:hover {
+        color: #ccc;
+      }
+
+      /* Dark mode */
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #1a1a1a;
+          color: #e0e0e0;
+        }
+        h1 {
+          color: #e0e0e0;
+        }
+        .game {
+          background: #2a2a2a;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        }
+        .game:hover {
+          box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+        }
+        .game-badge {
+          background: rgba(42, 42, 42, 0.95);
+          color: #e0e0e0;
+        }
+        .game h3 {
+          color: #e0e0e0;
+        }
+        .game-developer {
+          color: #999;
+        }
+        .game-description {
+          color: #b0b0b0;
+        }
+        .carousel::-webkit-scrollbar-thumb {
+          background: #555;
+        }
+        .platform {
+          background: #0d6efd;
+        }
+        .platform:hover {
+          background: #0a58ca;
+        }
       }
     </style>
   </head>
   <body>
-    <h1>Humble Vault Downloader</h1>
     <div id="loading">Loading games...</div>
     <div id="games"></div>
 
+    <!-- Modal -->
+    <div id="modal" class="modal" onclick="closeModal(event)">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">&times;</button>
+        <div id="modal-body"></div>
+      </div>
+    </div>
+
     <script>
       const token = decodeURIComponent(window.location.hash.slice(1));
-      
-      async function fetchGames() {
-        try {
-          const games = await window.__TAURI__.core.invoke('fetch_vault_games', { token });
-          displayGames(games);
-        } catch (error) {
-          document.getElementById('loading').textContent = 'Error loading games: ' + error;
+
+      function openModal(content, isVideo = false) {
+        const modal = document.getElementById("modal");
+        const modalBody = document.getElementById("modal-body");
+        modalBody.innerHTML = "";
+
+        if (isVideo) {
+          const iframe = document.createElement("iframe");
+          iframe.src = `https://www.youtube.com/embed/${content}?autoplay=1`;
+          iframe.allow =
+            "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+          iframe.allowFullscreen = true;
+          modalBody.appendChild(iframe);
+        } else {
+          const img = document.createElement("img");
+          img.src = content;
+          modalBody.appendChild(img);
+        }
+
+        modal.classList.add("active");
+      }
+
+      function closeModal(event) {
+        if (
+          !event ||
+          event.target.id === "modal" ||
+          event.target.classList.contains("modal-close")
+        ) {
+          const modal = document.getElementById("modal");
+          modal.classList.remove("active");
+          document.getElementById("modal-body").innerHTML = "";
         }
       }
 
+      async function fetchGames() {
+        try {
+          const games = await window.__TAURI__.core.invoke(
+            "fetch_vault_games",
+            { token },
+          );
+          displayGames(games);
+        } catch (error) {
+          document.getElementById("loading").textContent =
+            "Error loading games: " + error;
+        }
+      }
+
+      function stripHtml(html) {
+        const tmp = document.createElement("div");
+        tmp.innerHTML = html;
+        return tmp.textContent || tmp.innerText || "";
+      }
+
       function displayGames(games) {
-        document.getElementById('loading').style.display = 'none';
-        const container = document.getElementById('games');
-        
-        games.forEach(game => {
-          const div = document.createElement('div');
-          div.className = 'game';
-          
-          const title = document.createElement('h3');
-          title.textContent = game.name;
-          div.appendChild(title);
-          
-          const platforms = document.createElement('div');
-          platforms.className = 'platforms';
-          
-          Object.entries(game.downloads).forEach(([platform, files]) => {
-            files.forEach(file => {
-              const btn = document.createElement('div');
-              btn.className = 'platform';
-              btn.textContent = `${platform}: ${file.filename}`;
-              btn.onclick = () => downloadFile(game.machine_name, file, token);
-              platforms.appendChild(btn);
-            });
-          });
-          
-          div.appendChild(platforms);
+        document.getElementById("loading").style.display = "none";
+        const container = document.getElementById("games");
+
+        games.forEach((game) => {
+          const div = document.createElement("div");
+          div.className = "game";
+
+          // Set background color if available
+          if (game["background-color"]) {
+            div.style.backgroundColor = game["background-color"];
+          }
+
+          // Header with image
+          const header = document.createElement("div");
+          header.className = "game-header";
+
+          const img = document.createElement("img");
+          img.className = "game-image";
+          img.src = game.image || "";
+          img.alt = game["human-name"] || "";
+          header.appendChild(img);
+
+          // Humble Original badge
+          if (game["humble-original"]) {
+            const badge = document.createElement("div");
+            badge.className = "game-badge";
+            badge.textContent = "HUMBLE ORIGINAL";
+            header.appendChild(badge);
+          }
+
+          div.appendChild(header);
+
+          // Content
+          const content = document.createElement("div");
+          content.className = "game-content";
+
+          const title = document.createElement("h3");
+          title.textContent = game["human-name"] || "";
+          content.appendChild(title);
+
+          // Developer
+          if (game.developers && game.developers.length > 0) {
+            const dev = document.createElement("div");
+            dev.className = "game-developer";
+            dev.textContent = game.developers
+              .map((d) => d["developer-name"])
+              .join(", ");
+            content.appendChild(dev);
+          }
+
+          // Description
+          if (game["description-text"]) {
+            const desc = document.createElement("div");
+            desc.className = "game-description";
+            desc.textContent = stripHtml(game["description-text"]);
+            content.appendChild(desc);
+          }
+
+          // Carousel
+          if (game["carousel-content"]) {
+            const carousel = document.createElement("div");
+            carousel.className = "carousel";
+
+            // Add YouTube videos first
+            if (game["carousel-content"]["youtube-link"]) {
+              game["carousel-content"]["youtube-link"].forEach((videoId) => {
+                const item = document.createElement("div");
+                item.className = "carousel-item video";
+                const thumbImg = document.createElement("img");
+                thumbImg.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
+                thumbImg.alt = "Video";
+                item.appendChild(thumbImg);
+                item.onclick = () => openModal(videoId, true);
+                carousel.appendChild(item);
+              });
+            }
+
+            // Add screenshots
+            if (
+              game["carousel-content"].thumbnail &&
+              game["carousel-content"].screenshot
+            ) {
+              game["carousel-content"].thumbnail.forEach((thumb, index) => {
+                const item = document.createElement("div");
+                item.className = "carousel-item";
+                const thumbImg = document.createElement("img");
+                thumbImg.src = thumb;
+                thumbImg.alt = "Screenshot";
+                item.appendChild(thumbImg);
+                item.onclick = () =>
+                  openModal(game["carousel-content"].screenshot[index]);
+                carousel.appendChild(item);
+              });
+            }
+
+            if (carousel.children.length > 0) {
+              content.appendChild(carousel);
+            }
+          }
+
+          // Platforms
+          const platforms = document.createElement("div");
+          platforms.className = "platforms";
+
+          if (game.downloads) {
+            Object.entries(game.downloads).forEach(
+              ([platform, platformData]) => {
+                if (platformData?.url?.web) {
+                  const btn = document.createElement("div");
+                  btn.className = "platform";
+                  const size = platformData.size || "";
+                  btn.textContent = `${platform}${size ? " (" + size + ")" : ""}`;
+                  btn.onclick = () =>
+                    downloadFile(
+                      platformData["machine_name"] || game["machine-name"],
+                      platformData.url.web,
+                      platformData.url.web.split("/").pop(),
+                      token,
+                    );
+                  platforms.appendChild(btn);
+                }
+              },
+            );
+          }
+
+          content.appendChild(platforms);
+          div.appendChild(content);
           container.appendChild(div);
         });
       }
 
-      async function downloadFile(machineName, file, token) {
+      async function downloadFile(machineName, url, filename, token) {
         const btn = event.target;
         const originalText = btn.textContent;
-        btn.textContent = 'Downloading...';
-        btn.style.pointerEvents = 'none';
-        
+        btn.textContent = "Downloading...";
+        btn.style.pointerEvents = "none";
+
         try {
-          console.log('Downloading:', file);
-          const result = await window.__TAURI__.core.invoke('download_game', {
+          const result = await window.__TAURI__.core.invoke("download_game", {
             token,
-            machineName: file.machine_name,
-            filename: file.url,
-            humanName: file.filename
+            machineName,
+            filename: url,
+            humanName: filename,
           });
-          btn.textContent = '✓ Downloaded';
+          btn.textContent = "✓ Downloaded";
           setTimeout(() => {
             btn.textContent = originalText;
-            btn.style.pointerEvents = 'auto';
+            btn.style.pointerEvents = "auto";
           }, 2000);
-          console.log('Download result:', result);
         } catch (error) {
-          btn.textContent = '✗ Error';
+          btn.textContent = "✗ Error";
           setTimeout(() => {
             btn.textContent = originalText;
-            btn.style.pointerEvents = 'auto';
+            btn.style.pointerEvents = "auto";
           }, 2000);
-          console.error('Download error:', error);
-          alert('Download error: ' + error);
+          console.error("Download error:", error);
+          alert("Download error: " + error);
         }
       }
 
