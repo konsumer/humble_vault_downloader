@@ -1,6 +1,6 @@
 [package]
 name = "humble_vault_downloader"
-version = "0.0.3"
+version = "0.0.4"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
