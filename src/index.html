@@ -40,6 +40,7 @@
           box-shadow 0.2s;
         display: flex;
         flex-direction: column;
+        cursor: pointer;
       }
       .game:hover {
         transform: translateY(-4px);
@@ -173,13 +174,15 @@
         background-color: rgba(0, 0, 0, 0.9);
         align-items: center;
         justify-content: center;
+        padding: 20px;
       }
       .modal.active {
         display: flex;
       }
       .modal-content {
-        max-width: 90%;
-        max-height: 90%;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
         position: relative;
       }
       .modal-content img {
@@ -188,9 +191,8 @@
         border-radius: 4px;
       }
       .modal-content iframe {
-        width: 80vw;
-        height: 45vw;
-        max-height: 80vh;
+        width: 100%;
+        aspect-ratio: 16/9;
         border: none;
         border-radius: 4px;
       }
@@ -206,9 +208,79 @@
         border: none;
         padding: 0;
         line-height: 1;
+        z-index: 1001;
       }
       .modal-close:hover {
         color: #ccc;
+      }
+
+      /* Game Detail Modal */
+      .game-detail {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        max-height: 85vh;
+        overflow-y: auto;
+        color: #333;
+      }
+      .game-detail h2 {
+        margin: 0 0 8px 0;
+        color: #333;
+        font-size: 28px;
+      }
+      .game-detail .developer {
+        color: #666;
+        margin-bottom: 20px;
+        font-size: 16px;
+      }
+      .game-detail .description {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        color: #444;
+        font-size: 15px;
+      }
+      .game-detail .detail-carousel {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .game-detail .detail-carousel-item {
+        position: relative;
+        cursor: pointer;
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      .game-detail .detail-carousel-item img {
+        width: 100%;
+        height: auto;
+        display: block;
+        transition: transform 0.2s;
+      }
+      .game-detail .detail-carousel-item:hover img {
+        transform: scale(1.05);
+      }
+      .game-detail .detail-carousel-item.video::after {
+        content: "▶";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        padding-left: 4px;
+      }
+      .game-detail .platforms {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
       /* Dark mode */
@@ -249,6 +321,19 @@
         .platform:hover {
           background: #0a58ca;
         }
+        .game-detail {
+          background: #2a2a2a;
+          color: #e0e0e0;
+        }
+        .game-detail h2 {
+          color: #e0e0e0;
+        }
+        .game-detail .developer {
+          color: #999;
+        }
+        .game-detail .description {
+          color: #b0b0b0;
+        }
       }
     </style>
   </head>
@@ -266,6 +351,7 @@
 
     <script>
       const token = decodeURIComponent(window.location.hash.slice(1));
+      let allGames = [];
 
       function openModal(content, isVideo = false) {
         const modal = document.getElementById("modal");
@@ -288,6 +374,112 @@
         modal.classList.add("active");
       }
 
+      function openGameDetail(game) {
+        const modal = document.getElementById("modal");
+        const modalBody = document.getElementById("modal-body");
+        modalBody.innerHTML = "";
+
+        const detail = document.createElement("div");
+        detail.className = "game-detail";
+
+        const title = document.createElement("h2");
+        title.textContent = game["human-name"] || "";
+        detail.appendChild(title);
+
+        if (game.developers && game.developers.length > 0) {
+          const dev = document.createElement("div");
+          dev.className = "developer";
+          const devNames = game.developers
+            .map((d) => d["developer-name"])
+            .join(", ");
+          const pubNames = game.publishers
+            ? game.publishers.map((p) => p["publisher-name"]).join(", ")
+            : "";
+          dev.textContent = `By ${devNames}${pubNames && pubNames !== devNames ? " • Published by " + pubNames : ""}`;
+          detail.appendChild(dev);
+        }
+
+        if (game["description-text"]) {
+          const desc = document.createElement("div");
+          desc.className = "description";
+          desc.innerHTML = game["description-text"];
+          detail.appendChild(desc);
+        }
+
+        // Carousel in detail view
+        if (game["carousel-content"]) {
+          const carousel = document.createElement("div");
+          carousel.className = "detail-carousel";
+
+          if (game["carousel-content"]["youtube-link"]) {
+            game["carousel-content"]["youtube-link"].forEach((videoId) => {
+              const item = document.createElement("div");
+              item.className = "detail-carousel-item video";
+              const thumbImg = document.createElement("img");
+              thumbImg.src = `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+              thumbImg.alt = "Video";
+              item.appendChild(thumbImg);
+              item.onclick = (e) => {
+                e.stopPropagation();
+                openModal(videoId, true);
+              };
+              carousel.appendChild(item);
+            });
+          }
+
+          if (game["carousel-content"].screenshot) {
+            game["carousel-content"].screenshot.forEach((screenshot) => {
+              const item = document.createElement("div");
+              item.className = "detail-carousel-item";
+              const img = document.createElement("img");
+              img.src = screenshot;
+              img.alt = "Screenshot";
+              item.appendChild(img);
+              item.onclick = (e) => {
+                e.stopPropagation();
+                openModal(screenshot);
+              };
+              carousel.appendChild(item);
+            });
+          }
+
+          if (carousel.children.length > 0) {
+            detail.appendChild(carousel);
+          }
+        }
+
+        // Download platforms
+        if (game.downloads) {
+          const platforms = document.createElement("div");
+          platforms.className = "platforms";
+
+          Object.entries(game.downloads).forEach(([platform, platformData]) => {
+            if (platformData?.url?.web) {
+              const btn = document.createElement("div");
+              btn.className = "platform";
+              const size = platformData.size || "";
+              btn.textContent = `Download ${platform}${size ? " (" + size + ")" : ""}`;
+              btn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(
+                  platformData["machine_name"] || game["machine-name"],
+                  platformData.url.web,
+                  platformData.url.web.split("/").pop(),
+                  token,
+                  btn,
+                );
+              };
+              platforms.appendChild(btn);
+            }
+          });
+
+          detail.appendChild(platforms);
+        }
+
+        modalBody.appendChild(detail);
+        modal.classList.add("active");
+      }
+
       function closeModal(event) {
         if (
           !event ||
@@ -306,6 +498,13 @@
             "fetch_vault_games",
             { token },
           );
+          // Sort games alphabetically by name
+          games.sort((a, b) => {
+            const nameA = (a["human-name"] || "").toLowerCase();
+            const nameB = (b["human-name"] || "").toLowerCase();
+            return nameA.localeCompare(nameB);
+          });
+          allGames = games;
           displayGames(games);
         } catch (error) {
           document.getElementById("loading").textContent =
@@ -326,13 +525,12 @@
         games.forEach((game) => {
           const div = document.createElement("div");
           div.className = "game";
+          div.onclick = () => openGameDetail(game);
 
-          // Set background color if available
           if (game["background-color"]) {
             div.style.backgroundColor = game["background-color"];
           }
 
-          // Header with image
           const header = document.createElement("div");
           header.className = "game-header";
 
@@ -342,7 +540,6 @@
           img.alt = game["human-name"] || "";
           header.appendChild(img);
 
-          // Humble Original badge
           if (game["humble-original"]) {
             const badge = document.createElement("div");
             badge.className = "game-badge";
@@ -352,7 +549,6 @@
 
           div.appendChild(header);
 
-          // Content
           const content = document.createElement("div");
           content.className = "game-content";
 
@@ -360,7 +556,6 @@
           title.textContent = game["human-name"] || "";
           content.appendChild(title);
 
-          // Developer
           if (game.developers && game.developers.length > 0) {
             const dev = document.createElement("div");
             dev.className = "game-developer";
@@ -370,7 +565,6 @@
             content.appendChild(dev);
           }
 
-          // Description
           if (game["description-text"]) {
             const desc = document.createElement("div");
             desc.className = "game-description";
@@ -378,12 +572,10 @@
             content.appendChild(desc);
           }
 
-          // Carousel
           if (game["carousel-content"]) {
             const carousel = document.createElement("div");
             carousel.className = "carousel";
 
-            // Add YouTube videos first
             if (game["carousel-content"]["youtube-link"]) {
               game["carousel-content"]["youtube-link"].forEach((videoId) => {
                 const item = document.createElement("div");
@@ -392,12 +584,14 @@
                 thumbImg.src = `https://img.youtube.com/vi/${videoId}/default.jpg`;
                 thumbImg.alt = "Video";
                 item.appendChild(thumbImg);
-                item.onclick = () => openModal(videoId, true);
+                item.onclick = (e) => {
+                  e.stopPropagation();
+                  openModal(videoId, true);
+                };
                 carousel.appendChild(item);
               });
             }
 
-            // Add screenshots
             if (
               game["carousel-content"].thumbnail &&
               game["carousel-content"].screenshot
@@ -409,8 +603,10 @@
                 thumbImg.src = thumb;
                 thumbImg.alt = "Screenshot";
                 item.appendChild(thumbImg);
-                item.onclick = () =>
+                item.onclick = (e) => {
+                  e.stopPropagation();
                   openModal(game["carousel-content"].screenshot[index]);
+                };
                 carousel.appendChild(item);
               });
             }
@@ -420,7 +616,6 @@
             }
           }
 
-          // Platforms
           const platforms = document.createElement("div");
           platforms.className = "platforms";
 
@@ -432,13 +627,16 @@
                   btn.className = "platform";
                   const size = platformData.size || "";
                   btn.textContent = `${platform}${size ? " (" + size + ")" : ""}`;
-                  btn.onclick = () =>
+                  btn.onclick = (e) => {
+                    e.stopPropagation();
                     downloadFile(
                       platformData["machine_name"] || game["machine-name"],
                       platformData.url.web,
                       platformData.url.web.split("/").pop(),
                       token,
+                      btn,
                     );
+                  };
                   platforms.appendChild(btn);
                 }
               },
@@ -451,8 +649,7 @@
         });
       }
 
-      async function downloadFile(machineName, url, filename, token) {
-        const btn = event.target;
+      async function downloadFile(machineName, url, filename, token, btn) {
         const originalText = btn.textContent;
         btn.textContent = "Downloading...";
         btn.style.pointerEvents = "none";
