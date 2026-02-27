@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Humble Vault Downloader
+Comment=Download games from your Humble Bundle vault
+Exec=bash -c 'INSTALL_DIR="$HOME/.local/share/humble-vault-downloader"; mkdir -p "$INSTALL_DIR"; cd "$INSTALL_DIR"; if [ ! -f "humble-vault-downloader.AppImage" ]; then echo "Downloading Humble Vault Downloader..."; LATEST_URL=$(curl -s https://api.github.com/repos/konsumer/humble_vault_downloader/releases/latest | grep "browser_download_url.*AppImage" | cut -d : -f 2,3 | tr -d \\" | tr -d " "); curl -L -o humble-vault-downloader.AppImage "$LATEST_URL"; chmod +x humble-vault-downloader.AppImage; fi; ./humble-vault-downloader.AppImage'
+Icon=application-x-executable
+Terminal=false
+Categories=Game;Utility;
+Keywords=humble;bundle;download;games;
