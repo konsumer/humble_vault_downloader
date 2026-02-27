@@ -15,15 +15,14 @@ Download the latest version for your system from the [Releases page](https://git
 
 Open the DMG and drag the app to your Applications folder.
 
-### Linux
+### Linux & Steam Deck
 
-**Easy Install (Recommended for Steam Deck):**
+**Easy Install (Recommended):**
 
-```bash
-curl -sSL https://raw.githubusercontent.com/konsumer/humble_vault_downloader/main/install-desktop.sh | bash
-```
-
-This downloads the latest AppImage and adds it to your application menu.
+1. Download [humble-vault-downloader.desktop](https://github.com/konsumer/humble_vault_downloader/raw/main/humble-vault-downloader.desktop)
+2. Double-click it to launch
+3. On first run, it will download the latest version automatically
+4. Find it in your application menu for future launches
 
 **Manual Installation:**
 
@@ -46,22 +45,12 @@ This downloads the latest AppImage and adds it to your application menu.
   sudo rpm -i humble-vault-downloader_*.rpm
   ```
 
-- **Tarball** (manual installation):
+- **Tarball**:
   ```bash
   tar -xzf humble-vault-downloader_*.tar.gz
   cd humble-vault-downloader
   ./humble-vault-downloader
   ```
-
-### Steam Deck
-
-1. Switch to Desktop Mode
-2. Open Konsole (terminal)
-3. Run:
-   ```bash
-   curl -sSL https://raw.githubusercontent.com/konsumer/humble_vault_downloader/main/install-desktop.sh | bash
-   ```
-4. Find "Humble Vault Downloader" in your application menu
 
 ## How to Use
 
