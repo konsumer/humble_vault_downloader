@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Humble Vault Downloader</title>
+    <style>
+      body {
+        font-family: system-ui, -apple-system, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+      #loading {
+        text-align: center;
+        padding: 40px;
+      }
+      .game {
+        border: 1px solid #ddd;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 5px;
+      }
+      .game h3 {
+        margin: 0 0 10px 0;
+      }
+      .platforms {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .platform {
+        background: #f0f0f0;
+        padding: 5px 10px;
+        border-radius: 3px;
+        cursor: pointer;
+      }
+      .platform:hover {
+        background: #e0e0e0;
+      }
+      button {
+        padding: 8px 16px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Humble Vault Downloader</h1>
+    <div id="loading">Loading games...</div>
+    <div id="games"></div>
+
+    <script>
+      const token = decodeURIComponent(window.location.hash.slice(1));
+      
+      async function fetchGames() {
+        try {
+          const games = await window.__TAURI__.core.invoke('fetch_vault_games', { token });
+          displayGames(games);
+        } catch (error) {
+          document.getElementById('loading').textContent = 'Error loading games: ' + error;
+        }
+      }
+
+      function displayGames(games) {
+        document.getElementById('loading').style.display = 'none';
+        const container = document.getElementById('games');
+        
+        games.forEach(game => {
+          const div = document.createElement('div');
+          div.className = 'game';
+          
+          const title = document.createElement('h3');
+          title.textContent = game.name;
+          div.appendChild(title);
+          
+          const platforms = document.createElement('div');
+          platforms.className = 'platforms';
+          
+          Object.entries(game.downloads).forEach(([platform, files]) => {
+            files.forEach(file => {
+              const btn = document.createElement('div');
+              btn.className = 'platform';
+              btn.textContent = `${platform}: ${file.filename}`;
+              btn.onclick = () => downloadFile(game.machine_name, file, token);
+              platforms.appendChild(btn);
+            });
+          });
+          
+          div.appendChild(platforms);
+          container.appendChild(div);
+        });
+      }
+
+      async function downloadFile(machineName, file, token) {
+        const btn = event.target;
+        const originalText = btn.textContent;
+        btn.textContent = 'Downloading...';
+        btn.style.pointerEvents = 'none';
+        
+        try {
+          console.log('Downloading:', file);
+          const result = await window.__TAURI__.core.invoke('download_game', {
+            token,
+            machineName: file.machine_name,
+            filename: file.url,
+            humanName: file.filename
+          });
+          btn.textContent = '✓ Downloaded';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.pointerEvents = 'auto';
+          }, 2000);
+          console.log('Download result:', result);
+        } catch (error) {
+          btn.textContent = '✗ Error';
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.pointerEvents = 'auto';
+          }, 2000);
+          console.error('Download error:', error);
+          alert('Download error: ' + error);
+        }
+      }
+
+      fetchGames();
+    </script>
+  </body>
+</html>
