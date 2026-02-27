@@ -1,0 +1,7 @@
+name = "humblevault"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+# Add your Humble Bundle session token as a secret:
+# npx wrangler secret put HUMBLE_TOKEN
+# Then paste your _simpleauth_sess cookie value
