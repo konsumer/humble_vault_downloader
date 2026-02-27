@@ -1,9 +1,0 @@
-{
-  "name": "humble-vault-downloader-worker",
-  "version": "1.0.0",
-  "private": true,
-  "scripts": {
-    "start": "npx -y wrangler dev",
-    "deploy": "npx -y wrangler deploy"
-  }
-}
