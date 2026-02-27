@@ -1,87 +1,45 @@
 # Humble Vault Downloader
 
-A cross-platform desktop application to browse and download games from your Humble Bundle vault.
-
-## Features
-
-- 🔐 Secure login via Humble Bundle's official login page
-- 📦 Browse all your vault games
-- ⬇️ Download games for Windows, macOS, and Linux
-- 💾 Files saved directly to your Downloads folder
+A simple desktop app to download games from your Humble Bundle vault.
 
 ## Installation
 
-### Download Pre-built Releases
+Download the latest version for your system from the [Releases page](https://github.com/konsumer/humble_vault_downloader/releases).
 
-Go to the [Releases](https://github.com/konsumer/humble_vault_downloader/releases) page and download the appropriate file for your platform:
+### macOS
 
-#### macOS
-- **Apple Silicon (M1/M2/M3)**: Download `Humble.Vault.Downloader_*_aarch64.dmg`
-- **Intel**: Download `Humble.Vault.Downloader_*_x64.dmg`
+- **Apple Silicon (M1/M2/M3)**: Download the `aarch64.dmg` file
+- **Intel Mac**: Download the `x64.dmg` file
 
-Open the DMG file and drag the app to your Applications folder.
+Open the DMG and drag the app to your Applications folder.
 
-#### Linux
-- **AppImage**: Download `humble-vault-downloader_*_amd64.AppImage`
-  - Make it executable: `chmod +x humble-vault-downloader_*.AppImage`
-  - Run it: `./humble-vault-downloader_*.AppImage`
-- **Debian/Ubuntu**: Download `humble-vault-downloader_*_amd64.deb`
-  - Install: `sudo dpkg -i humble-vault-downloader_*.deb`
+### Linux
 
-## Usage
+- **AppImage** (works on any distribution):
+  ```bash
+  chmod +x humble-vault-downloader_*.AppImage
+  ./humble-vault-downloader_*.AppImage
+  ```
 
-1. Launch the application
-2. Log in with your Humble Bundle credentials
-3. Browse your vault games
-4. Click on any platform/file to download it
-5. Files will be saved to your Downloads folder
+- **Debian/Ubuntu**:
+  ```bash
+  sudo dpkg -i humble-vault-downloader_*.deb
+  ```
 
-## Building from Source
+## How to Use
 
-### Prerequisites
+1. Open the app
+2. Log in with your Humble Bundle account
+3. Browse your games
+4. Click any game to download it
+5. Files save to your Downloads folder
 
-- [Node.js](https://nodejs.org/) (LTS version)
-- [Rust](https://rustup.rs/)
-- Platform-specific dependencies:
-  - **Linux**: `sudo apt-get install libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf`
-  - **macOS**: Xcode Command Line Tools
+## Note
 
-### Build Steps
+Windows is not supported as Humble Bundle provides an [official Windows client](https://www.humblebundle.com/app).
 
-```bash
-# Clone the repository
-git clone https://github.com/konsumer/humble_vault_downloader.git
-cd humble_vault_downloader
+## Privacy
 
-# Install dependencies
-npm install
-
-# Run in development mode
-npm start
-
-# Build for production
-npm run tauri build
-```
-
-## How It Works
-
-1. Opens Humble Bundle's login page in a webview
-2. Detects when you successfully log in
-3. Extracts your session cookie securely
-4. Uses Humble Bundle's API to fetch your vault games
-5. Downloads selected games using signed URLs
-
-## Privacy & Security
-
-- No credentials are stored or transmitted to any third party
-- Uses official Humble Bundle login page and APIs
-- Session cookie stays local on your machine
-- All network requests go directly to Humble Bundle servers
-
-## License
-
-MIT
-
-## Credits
-
-Inspired by [Slashbunny/humble-vault-downloader](https://github.com/Slashbunny/humble-vault-downloader)
+- Your login credentials never leave your computer
+- All downloads come directly from Humble Bundle
+- No data is collected or shared with third parties
